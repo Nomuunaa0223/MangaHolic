@@ -1,28 +1,51 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import HomeAuthButton from "./_components/HomeAuthButton";
-import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+type MangaCard = {
+  id: number;
+  title: string;
+  _count: {
+    chapters: number;
+  };
+};
 
-export default async function Home() {
-  let mangaList: Array<{
-    id: number;
-    title: string;
-    _count: { chapters: number };
-  }> = [];
+export default function Home() {
+  const [mangaList, setMangaList] = useState<MangaCard[]>([]);
+  const [loadError, setLoadError] = useState(false);
 
-  let loadError = false;
+  useEffect(() => {
+    let active = true;
 
-  try {
-    mangaList = await prisma.manga.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { _count: { select: { chapters: true } } },
-    });
-  } catch (error) {
-    loadError = true;
-    console.error("Failed to load manga list", error);
-  }
+    async function loadManga() {
+      try {
+        const res = await fetch("/api/manga", { cache: "no-store" });
+        const data = await res.json();
+
+        if (!active) return;
+
+        if (!res.ok || !Array.isArray(data)) {
+          setLoadError(true);
+          return;
+        }
+
+        setMangaList(data);
+      } catch (error) {
+        console.error("Failed to fetch manga list", error);
+        if (active) {
+          setLoadError(true);
+        }
+      }
+    }
+
+    loadManga();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const featured = mangaList[0] ?? null;
 
@@ -55,7 +78,8 @@ export default async function Home() {
         <section className="relative z-10 px-8 py-10">
           {loadError ? (
             <div className="mb-6 rounded-2xl border border-amber-300/20 bg-amber-400/10 px-5 py-4 text-sm text-amber-100">
-              Database holbolt aldaatai baina. Neon/Vercel env-aa shalgasny daraa content dahin garna.
+              Database holbolt tur aldaatai baina. Home page neegdsen ch content
+              load hiij chadahgui baij bolno.
             </div>
           ) : null}
 
@@ -86,7 +110,7 @@ export default async function Home() {
                     <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
                       Chapters
                     </div>
-                    <div className="mt-1 text-lg font-semibold text-white flex items-center">
+                    <div className="mt-1 flex items-center text-lg font-semibold text-white">
                       {featured?._count?.chapters ?? 0}
                     </div>
                   </div>
@@ -115,7 +139,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-emerald-300/60 via-fuchsia-500/40 to-slate-900/80 p-6">
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-300/60 via-fuchsia-500/40 to-slate-900/80 p-6">
               <div
                 className="flex h-[320px] w-full items-end justify-end rounded-2xl border border-white/10 bg-cover bg-center"
                 style={{
@@ -140,7 +164,7 @@ export default async function Home() {
                 <div className="h-28 bg-gradient-to-br from-orange-500/70 via-red-500/50 to-slate-900/70" />
                 <div className="p-4">
                   <div className="inline-flex items-center gap-2 rounded-full bg-red-500 px-2 py-1 text-[10px] font-semibold text-white">
-                    {m._count.chapters} 
+                    {m._count.chapters}
                   </div>
                   <h3 className="mt-3 text-sm font-semibold">
                     {index + 1}. {m.title}
