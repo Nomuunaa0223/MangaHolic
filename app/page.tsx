@@ -1,65 +1,135 @@
-import Image from "next/image";
+import Link from "next/link";
+import HomeAuthButton from "./_components/HomeAuthButton";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const mangaList = await prisma.manga.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { _count: { select: { chapters: true } } },
+  });
+
+  const featured = mangaList[0] ?? null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen bg-[#1b1b1b] text-white">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,_rgba(255,0,90,0.25),_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,_rgba(0,200,255,0.2),_transparent_50%)]" />
+
+        <nav className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/70 px-8 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500 font-black">
+              MH
+            </div>
+            <span className="text-xl font-bold tracking-tight">MangaHolic</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="/subscription"
+              className="rounded-lg border border-white/20 px-4 py-2 text-sm transition hover:border-white/40"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              Subscription
+            </Link>
+            <HomeAuthButton />
+          </div>
+        </nav>
+
+        <section className="relative z-10 px-8 py-10">
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <div className="relative isolate flex min-h-[320px] flex-col justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(43,10,18,0.98)_0%,rgba(28,8,16,0.97)_58%,rgba(18,6,13,0.98)_100%)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-8">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,87,99,0.2),transparent_34%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.06),transparent_28%)]" />
+              <div className="absolute right-5 top-5 h-24 w-24 rounded-full border border-white/10 bg-white/5 blur-2xl" />
+
+              <div className="relative">
+                <div className="inline-flex items-center rounded-full border border-red-300/30 bg-[#ff3341] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_10px_30px_rgba(255,51,65,0.35)]">
+                  Latest Release
+                </div>
+
+                <h2 className="mt-6 max-w-[9ch] text-4xl font-black leading-[0.92] tracking-[-0.04em] text-white sm:text-5xl">
+                  {featured?.title ?? "Manga"}
+                </h2>
+
+                <p className="mt-3 max-w-xs text-sm leading-6 text-white/68 sm:text-base">
+                  Featured series with the newest chapters ready to open
+                  instantly.
+                </p>
+              </div>
+
+              <div className="relative mt-10">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+                      Chapters
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-white flex items-center">
+                      {featured?._count?.chapters ?? 0}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+                      Status
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-white">
+                      New Drop
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex gap-3">
+                  {featured ? (
+                    <Link
+                      href={`/manga/${featured.id}`}
+                      className="inline-flex items-center gap-2 rounded-2xl bg-[#ff3341] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#ff4754] hover:shadow-[0_14px_34px_rgba(255,51,65,0.35)]"
+                    >
+                      Read Now
+                      <span aria-hidden="true">{"->"}</span>
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-emerald-300/60 via-fuchsia-500/40 to-slate-900/80 p-6">
+              <div
+                className="flex h-[320px] w-full items-end justify-end rounded-2xl border border-white/10 bg-cover bg-center"
+                style={{
+                  backgroundImage:
+                    "url('https://jumpg-assets.tokyo-cdn.com/secure/title/100171/title_thumbnail_main/312232.jpg?hash=m_vhLi3GSUNLHNXwv1XUpA&expires=2145884400')",
+                }}
+              >
+                <div className="m-6 rounded-full bg-black/60 px-4 py-2 text-sm font-semibold">
+                  FEATURED HERO
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-5">
+            {mangaList.map((m, index) => (
+              <Link
+                key={m.id}
+                href={`/manga/${m.id}`}
+                className="overflow-hidden rounded-2xl border border-white/10 bg-black/60 transition hover:border-white/30"
+              >
+                <div className="h-28 bg-gradient-to-br from-orange-500/70 via-red-500/50 to-slate-900/70" />
+                <div className="p-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-red-500 px-2 py-1 text-[10px] font-semibold text-white">
+                    {m._count.chapters} 
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold">
+                    {index + 1}. {m.title}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

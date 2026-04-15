@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum RoleName {
+  USER
+  ADMIN
+}
+
+enum Plan {
+  FREE
+  PREMIUM
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  subscription Subscription?
+  createdAt    DateTime @default(now())
+  readAccess   ReadAccess[]
+}
+
+model Role {
+  id    String   @id @default(uuid())
+  name  RoleName
+  users User[]
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @default(FREE)
+  expiresAt DateTime?
+}
+
+model ReadAccess {
+  id        String   @id @default(uuid())
+  userId    String
+  mangaId   String
+  chapterId String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  manga  Manga  @relation(fields: [mangaId], references: [id])
+  chapter Chapter @relation(fields: [chapterId], references: [id])
+
+  @@unique([userId, mangaId])
+}
+
+model Manga {
+  id        String    @id @default(uuid())
+  title     String
+  createdAt DateTime  @default(now())
+  chapters  Chapter[]
+  readAccess ReadAccess[]
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  order     Int
+  isPreview Boolean  @default(false)
+  mangaId   String
+  manga     Manga    @relation(fields: [mangaId], references: [id])
+  readAccess ReadAccess[]
+}
