@@ -5,23 +5,41 @@ import AdminUsersPanel from "./_components/AdminUsersPanel";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [mangaCount, chapterCount, userCount, premiumCount, rawUsers] =
-    await Promise.all([
-      prisma.manga.count(),
-      prisma.chapter.count(),
-      prisma.user.count(),
-      prisma.subscription.count({
-        where: { plan: "PREMIUM" },
-      }),
-      prisma.user.findMany({
-        include: {
-          role: true,
-          subscription: true,
-        },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
-    ]);
+  let mangaCount = 0;
+  let chapterCount = 0;
+  let userCount = 0;
+  let premiumCount = 0;
+  let rawUsers: Array<{
+    id: number;
+    email: string;
+    createdAt: Date;
+    role: { name: "USER" | "ADMIN" };
+    subscription: { plan: "FREE" | "PREMIUM" } | null;
+  }> = [];
+  let loadError = false;
+
+  try {
+    [mangaCount, chapterCount, userCount, premiumCount, rawUsers] =
+      await Promise.all([
+        prisma.manga.count(),
+        prisma.chapter.count(),
+        prisma.user.count(),
+        prisma.subscription.count({
+          where: { plan: "PREMIUM" },
+        }),
+        prisma.user.findMany({
+          include: {
+            role: true,
+            subscription: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        }),
+      ]);
+  } catch (error) {
+    loadError = true;
+    console.error("Failed to load admin dashboard", error);
+  }
 
   const freeCount = Math.max(userCount - premiumCount, 0);
   const premiumPercent =
@@ -36,6 +54,12 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
+      {loadError ? (
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-5 py-4 text-sm text-amber-100">
+          Dashboard data-g database-aas unshij chadsangui. Neon schema bolon Vercel environment variable-aa shalgana uu.
+        </div>
+      ) : null}
+
       <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(34,11,18,0.96)_0%,rgba(17,10,18,0.98)_100%)] p-7 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:p-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,92,111,0.18),transparent_32%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.06),transparent_24%)]" />

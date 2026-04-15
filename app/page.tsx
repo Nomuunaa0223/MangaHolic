@@ -5,11 +5,24 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const mangaList = await prisma.manga.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    include: { _count: { select: { chapters: true } } },
-  });
+  let mangaList: Array<{
+    id: number;
+    title: string;
+    _count: { chapters: number };
+  }> = [];
+
+  let loadError = false;
+
+  try {
+    mangaList = await prisma.manga.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { _count: { select: { chapters: true } } },
+    });
+  } catch (error) {
+    loadError = true;
+    console.error("Failed to load manga list", error);
+  }
 
   const featured = mangaList[0] ?? null;
 
@@ -40,6 +53,12 @@ export default async function Home() {
         </nav>
 
         <section className="relative z-10 px-8 py-10">
+          {loadError ? (
+            <div className="mb-6 rounded-2xl border border-amber-300/20 bg-amber-400/10 px-5 py-4 text-sm text-amber-100">
+              Database holbolt aldaatai baina. Neon/Vercel env-aa shalgasny daraa content dahin garna.
+            </div>
+          ) : null}
+
           <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
             <div className="relative isolate flex min-h-[320px] flex-col justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(43,10,18,0.98)_0%,rgba(28,8,16,0.97)_58%,rgba(18,6,13,0.98)_100%)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-8">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,87,99,0.2),transparent_34%)]" />
