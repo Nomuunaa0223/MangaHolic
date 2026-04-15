@@ -2,6 +2,8 @@ import Link from "next/link";
 import HomeAuthButton from "./_components/HomeAuthButton";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const mangaList = await prisma.manga.findMany({
     orderBy: { createdAt: "desc" },
