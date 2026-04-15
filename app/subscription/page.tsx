@@ -17,8 +17,16 @@ export default function SubscriptionPage() {
     let active = true;
 
     async function load() {
+      const params = new URLSearchParams(window.location.search);
+      const hasStripeReturn =
+        params.get("success") === "1" || params.get("canceled") === "1";
       const token = localStorage.getItem("manga_token");
+
       if (!token) {
+        if (hasStripeReturn) {
+          return;
+        }
+
         router.replace("/auth/login?redirect=/subscription");
         return;
       }
@@ -62,9 +70,6 @@ export default function SubscriptionPage() {
       }
 
       const token = localStorage.getItem("manga_token");
-      if (!token) {
-        return;
-      }
 
       setCheckingOut(true);
       setStatus("Confirming Stripe payment...");
@@ -73,7 +78,7 @@ export default function SubscriptionPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ sessionId }),
       });
@@ -93,6 +98,10 @@ export default function SubscriptionPage() {
       setSub(data.subscription);
       setStatus("Stripe payment successful. Premium activated.");
       setCheckingOut(false);
+
+      if (!token) {
+        localStorage.removeItem("manga_token");
+      }
 
       const url = new URL(window.location.href);
       url.searchParams.delete("success");

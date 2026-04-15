@@ -1,16 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { getUser } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
 import { parseId } from "@/lib/ids";
 
 export async function POST(req: Request) {
-  let user;
-  try {
-    user = getUser(req);
-  } catch {
-    return Response.json({ error: "Login required" }, { status: 401 });
-  }
-
   let sessionId = "";
 
   try {
@@ -32,19 +24,15 @@ export async function POST(req: Request) {
       session.client_reference_id || session.metadata?.userId || ""
     );
 
-    if (sessionUserId !== user.userId) {
-      return Response.json({ error: "Session does not belong to this user" }, { status: 403 });
-    }
-
     if (session.payment_status !== "paid") {
       return Response.json({ error: "Payment has not completed yet" }, { status: 400 });
     }
 
     const subscription = await prisma.subscription.upsert({
-      where: { userId: user.userId },
+      where: { userId: sessionUserId },
       update: { plan: "PREMIUM" },
       create: {
-        userId: user.userId,
+        userId: sessionUserId,
         plan: "PREMIUM",
       },
     });
