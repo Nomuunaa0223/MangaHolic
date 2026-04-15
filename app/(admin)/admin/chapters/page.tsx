@@ -18,6 +18,7 @@ type Chapter = {
 export default function AdminChaptersPage() {
   const [manga, setManga] = useState<Manga[]>([]);
   const [selectedManga, setSelectedManga] = useState<string>("");
+  const [lockedMangaId, setLockedMangaId] = useState<string | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -39,6 +40,7 @@ export default function AdminChaptersPage() {
     const params = new URLSearchParams(window.location.search);
     const mangaId = params.get("mangaId");
     if (mangaId) {
+      setLockedMangaId(mangaId);
       setSelectedManga(mangaId);
     }
   }, []);
@@ -55,6 +57,13 @@ export default function AdminChaptersPage() {
         if (!active) return;
         const list = Array.isArray(data) ? data : [];
         setManga(list);
+        if (lockedMangaId) {
+          const exists = list.some((item) => item.id === lockedMangaId);
+          if (exists) {
+            setSelectedManga(lockedMangaId);
+            return;
+          }
+        }
         if (list[0]?.id) setSelectedManga(list[0].id);
       } finally {
         if (active) setLoading(false);
@@ -64,7 +73,7 @@ export default function AdminChaptersPage() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [lockedMangaId, token]);
 
   useEffect(() => {
     let active = true;
@@ -248,20 +257,29 @@ export default function AdminChaptersPage() {
           onSubmit={editingId ? updateChapter : createChapter}
           className="space-y-4"
         >
-          <div>
-            <label className="block text-sm text-white/70">Manga</label>
-            <select
-              className="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
-              value={selectedManga}
-              onChange={(e) => setSelectedManga(e.target.value)}
-            >
-              {manga.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {lockedMangaId ? (
+            <div>
+              <label className="block text-sm text-white/70">Manga</label>
+              <div className="mt-2 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/90">
+                {manga.find((m) => m.id === selectedManga)?.title || "Selected manga"}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm text-white/70">Manga</label>
+              <select
+                className="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
+                value={selectedManga}
+                onChange={(e) => setSelectedManga(e.target.value)}
+              >
+                {manga.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm text-white/70">Title</label>
