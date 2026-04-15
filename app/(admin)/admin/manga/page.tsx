@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Manga = {
-  id: string;
+  id: number;
   title: string;
   _count?: { chapters: number };
 };
 
 type Chapter = {
-  id: string;
+  id: number;
   title: string;
   content?: string;
   order?: number;
@@ -19,18 +19,18 @@ type Chapter = {
 export default function Page() {
   const [manga, setManga] = useState<Manga[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [status, setStatus] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [chaptersByManga, setChaptersByManga] = useState<
-    Record<string, Chapter[]>
+    Record<number, Chapter[]>
   >({});
-  const [pageByManga, setPageByManga] = useState<Record<string, number>>({});
-  const [hasMoreByManga, setHasMoreByManga] = useState<Record<string, boolean>>(
+  const [pageByManga, setPageByManga] = useState<Record<number, number>>({});
+  const [hasMoreByManga, setHasMoreByManga] = useState<Record<number, boolean>>(
     {}
   );
-  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
+  const [editingChapterId, setEditingChapterId] = useState<number | null>(null);
   const [chapterTitle, setChapterTitle] = useState("");
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function Page() {
     };
   }, []);
 
-  async function toggleManga(id: string) {
+  async function toggleManga(id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");
@@ -82,7 +82,7 @@ export default function Page() {
     }
   }
 
-  async function loadMoreChapters(id: string) {
+  async function loadMoreChapters(id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");
@@ -105,7 +105,7 @@ export default function Page() {
     }));
   }
 
-  async function deleteChapter(mangaId: string, id: string) {
+  async function deleteChapter(mangaId: number, id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");
@@ -133,7 +133,7 @@ export default function Page() {
     setChapterTitle(c.title);
   }
 
-  async function saveChapter(mangaId: string, id: string) {
+  async function saveChapter(mangaId: number, id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");
@@ -162,7 +162,7 @@ export default function Page() {
     setChapterTitle("");
   }
 
-  async function saveEdit(id: string) {
+  async function saveEdit(id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");
@@ -188,7 +188,7 @@ export default function Page() {
     setEditTitle("");
   }
 
-  async function deleteManga(id: string) {
+  async function deleteManga(id: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       setStatus("Login required");

@@ -4,8 +4,8 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type Chapter = { id: string; title: string; order: number };
-type Manga = { id: string; title: string; chapters?: Chapter[] };
+type Chapter = { id: number; title: string; order: number };
+type Manga = { id: number; title: string; chapters?: Chapter[] };
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -40,7 +40,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     };
   }, [id]);
 
-  function openChapter(chapterId: string) {
+  function openChapter(chapterId: number) {
     const token = localStorage.getItem("manga_token");
     if (!token) {
       router.push(`/auth/login?redirect=/chapter/${chapterId}`);

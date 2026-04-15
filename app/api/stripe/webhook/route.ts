@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { parseId } from "@/lib/ids";
 
 export async function POST(req: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -25,9 +26,10 @@ export async function POST(req: Request) {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const userId = session.metadata?.userId || session.client_reference_id;
+      const userIdRaw = session.metadata?.userId || session.client_reference_id;
 
-      if (userId && session.payment_status === "paid") {
+      if (userIdRaw && session.payment_status === "paid") {
+        const userId = parseId(userIdRaw);
         await prisma.subscription.upsert({
           where: { userId },
           update: { plan: "PREMIUM" },

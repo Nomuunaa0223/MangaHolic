@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
+import { parseId } from "@/lib/ids";
 
 export async function GET(req: Request) {
   let user: any = null;
@@ -16,9 +17,10 @@ export async function GET(req: Request) {
   if (!mangaId) {
     return Response.json({ error: "Missing mangaId" }, { status: 400 });
   }
+  const parsedMangaId = parseId(mangaId);
 
   const chapters = await prisma.chapter.findMany({
-    where: { mangaId },
+    where: { mangaId: parsedMangaId },
     orderBy: { order: "asc" },
     skip: (page - 1) * 10,
     take: 10,

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import AdminUsersPanel from "./_components/AdminUsersPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [mangaCount, chapterCount, userCount, premiumCount, users] =
+  const [mangaCount, chapterCount, userCount, premiumCount, rawUsers] =
     await Promise.all([
       prisma.manga.count(),
       prisma.chapter.count(),
@@ -25,6 +26,13 @@ export default async function AdminPage() {
   const freeCount = Math.max(userCount - premiumCount, 0);
   const premiumPercent =
     userCount === 0 ? 0 : Math.round((premiumCount / userCount) * 100);
+  const users = rawUsers.map((user) => ({
+    id: user.id,
+    email: user.email,
+    roleName: user.role.name,
+    plan: user.subscription?.plan ?? "FREE",
+    joinedAt: user.createdAt.toLocaleDateString("en-US"),
+  }));
 
   return (
     <div className="space-y-8">
@@ -102,15 +110,11 @@ export default async function AdminPage() {
           </Link>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.24)]">
-          <div className="text-sm text-white/55">Registered users</div>
-          <div className="mt-3 text-4xl font-black tracking-[-0.04em] text-white">
-            {userCount}
-          </div>
-          <div className="mt-5 text-sm text-white/42">
-            Premium users: {premiumCount}
-          </div>
-        </div>
+        <AdminUsersPanel
+          userCount={userCount}
+          premiumCount={premiumCount}
+          users={users}
+        />
 
         <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.24)]">
           <div className="text-sm text-white/55">Create manga</div>
@@ -126,70 +130,7 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,21,30,0.96)_0%,rgba(11,14,20,0.98)_100%)] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:p-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Registered users</h2>
-              <p className="mt-1 text-sm text-white/55">
-                Newest accounts first with role and subscription status.
-              </p>
-            </div>
-            <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70">
-              Showing {users.length}
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            {users.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/55">
-                No registered users yet.
-              </div>
-            ) : (
-              users.map((user, index) => {
-                const plan = user.subscription?.plan ?? "FREE";
-                const isPremium = plan === "PREMIUM";
-
-                return (
-                  <div
-                    key={user.id}
-                    className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-white/[0.04] px-4 py-4 transition hover:border-white/15 hover:bg-white/[0.06] lg:flex-row lg:items-center lg:justify-between"
-                  >
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/25 text-sm font-bold text-white/78">
-                        #{index + 1}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="truncate text-base font-semibold text-white">
-                          {user.email}
-                        </div>
-                        <div className="mt-1 text-xs text-white/42">
-                          Joined {user.createdAt.toLocaleDateString("en-US")}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium text-white/72">
-                        {user.role.name}
-                      </span>
-                      <span
-                        className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                          isPremium
-                            ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
-                            : "border-white/10 bg-white/[0.05] text-white/72"
-                        }`}
-                      >
-                        {plan}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
+      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <div className="space-y-6">
           <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(20,14,23,0.96)_0%,rgba(13,11,18,0.98)_100%)] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:p-7">
             <div className="text-sm text-white/55">Premium analytics</div>
@@ -219,22 +160,22 @@ export default async function AdminPage() {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.28)] sm:p-7">
-            <div className="text-sm text-white/55">Quick action</div>
-            <div className="mt-3 text-2xl font-bold tracking-[-0.03em] text-white">
-              Create a new manga
-            </div>
-            <p className="mt-2 text-sm leading-6 text-white/55">
-              Add a new title, then jump straight into chapter management.
-            </p>
-            <Link
-              href="/admin/manga/create"
-              className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-[#ff3341] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#ff4754] hover:shadow-[0_14px_34px_rgba(255,51,65,0.35)]"
-            >
-              Create manga {"->"}
-            </Link>
+        <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.28)] sm:p-7">
+          <div className="text-sm text-white/55">Quick action</div>
+          <div className="mt-3 text-2xl font-bold tracking-[-0.03em] text-white">
+            Create a new manga
           </div>
+          <p className="mt-2 text-sm leading-6 text-white/55">
+            Add a new title, then jump straight into chapter management.
+          </p>
+          <Link
+            href="/admin/manga/create"
+            className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-[#ff3341] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#ff4754] hover:shadow-[0_14px_34px_rgba(255,51,65,0.35)]"
+          >
+            Create manga {"->"}
+          </Link>
         </div>
       </section>
     </div>

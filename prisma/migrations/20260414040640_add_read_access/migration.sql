@@ -1,9 +1,9 @@
 -- CreateTable
 CREATE TABLE "ReadAccess" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "mangaId" TEXT NOT NULL,
-    "chapterId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "mangaId" INTEGER NOT NULL,
+    "chapterId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ReadAccess_pkey" PRIMARY KEY ("id")

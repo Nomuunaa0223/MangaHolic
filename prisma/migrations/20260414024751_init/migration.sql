@@ -6,10 +6,10 @@ CREATE TYPE "Plan" AS ENUM ('FREE', 'PREMIUM');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "roleId" TEXT NOT NULL,
+    "roleId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -17,7 +17,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Role" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" "RoleName" NOT NULL,
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
@@ -25,8 +25,8 @@ CREATE TABLE "Role" (
 
 -- CreateTable
 CREATE TABLE "Subscription" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
     "plan" "Plan" NOT NULL DEFAULT 'FREE',
     "expiresAt" TIMESTAMP(3),
 
@@ -35,7 +35,7 @@ CREATE TABLE "Subscription" (
 
 -- CreateTable
 CREATE TABLE "Manga" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -44,12 +44,12 @@ CREATE TABLE "Manga" (
 
 -- CreateTable
 CREATE TABLE "Chapter" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "isPreview" BOOLEAN NOT NULL DEFAULT false,
-    "mangaId" TEXT NOT NULL,
+    "mangaId" INTEGER NOT NULL,
 
     CONSTRAINT "Chapter_pkey" PRIMARY KEY ("id")
 );

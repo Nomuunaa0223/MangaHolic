@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
+import { parseId } from "@/lib/ids";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   let user: any;
@@ -9,8 +10,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return Response.json({ error: "Login required" }, { status: 401 });
   }
   const { id } = await params;
+  const chapterId = parseId(id);
   const chapter = await prisma.chapter.findUnique({
-    where: { id },
+    where: { id: chapterId },
   });
 
   if (!chapter) {
@@ -35,7 +37,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     orderBy: { order: "asc" },
   });
 
-  if (first && first.id === id) {
+  if (first && first.id === chapterId) {
     return Response.json(chapter);
   }
 
@@ -55,13 +57,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const { id } = await params;
+  const chapterId = parseId(id);
   const { title, content, order } = await req.json();
   if (!title && content === undefined && order === undefined) {
     return Response.json({ error: "Missing fields" }, { status: 400 });
   }
 
   const existing = await prisma.chapter.findUnique({
-    where: { id },
+    where: { id: chapterId },
   });
 
   if (!existing) {
@@ -69,7 +72,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const updated = await prisma.chapter.update({
-    where: { id },
+    where: { id: chapterId },
     data: {
       title: title ?? existing.title,
       content: content ?? existing.content,
@@ -94,8 +97,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 
   const { id } = await params;
+  const chapterId = parseId(id);
   await prisma.chapter.delete({
-    where: { id },
+    where: { id: chapterId },
   });
 
   return Response.json({ ok: true });

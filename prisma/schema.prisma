@@ -19,10 +19,10 @@ enum Plan {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           Int      @id @default(autoincrement())
   email        String   @unique
   password     String
-  roleId       String
+  roleId       Int
   role         Role     @relation(fields: [roleId], references: [id])
   subscription Subscription?
   createdAt    DateTime @default(now())
@@ -30,24 +30,24 @@ model User {
 }
 
 model Role {
-  id    String   @id @default(uuid())
+  id    Int      @id @default(autoincrement())
   name  RoleName
   users User[]
 }
 
 model Subscription {
-  id        String   @id @default(uuid())
-  userId    String   @unique
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
   user      User     @relation(fields: [userId], references: [id])
   plan      Plan     @default(FREE)
   expiresAt DateTime?
 }
 
 model ReadAccess {
-  id        String   @id @default(uuid())
-  userId    String
-  mangaId   String
-  chapterId String
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  mangaId   Int
+  chapterId Int
   createdAt DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id])
@@ -58,7 +58,7 @@ model ReadAccess {
 }
 
 model Manga {
-  id        String    @id @default(uuid())
+  id        Int       @id @default(autoincrement())
   title     String
   createdAt DateTime  @default(now())
   chapters  Chapter[]
@@ -66,12 +66,12 @@ model Manga {
 }
 
 model Chapter {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   title     String
   content   String
   order     Int
   isPreview Boolean  @default(false)
-  mangaId   String
+  mangaId   Int
   manga     Manga    @relation(fields: [mangaId], references: [id])
   readAccess ReadAccess[]
 }

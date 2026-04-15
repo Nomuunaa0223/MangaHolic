@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Chapter = {
-  id: string;
+  id: number;
   title: string;
   content: string;
-  mangaId: string;
+  mangaId: number;
   order: number;
 };
 

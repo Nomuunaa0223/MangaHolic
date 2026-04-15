@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
+import { parseId } from "@/lib/ids";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -8,8 +9,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // нэвтрээгүй ч manga харагдана
   }
   const { id } = await params;
+  const mangaId = parseId(id);
   const manga = await prisma.manga.findUnique({
-    where: { id },
+    where: { id: mangaId },
     include: {
       chapters: {
         orderBy: { order: "asc" },
@@ -33,13 +35,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const { id } = await params;
+  const mangaId = parseId(id);
   const { title } = await req.json();
   if (!title) {
     return Response.json({ error: "Missing title" }, { status: 400 });
   }
 
   const updated = await prisma.manga.update({
-    where: { id },
+    where: { id: mangaId },
     data: { title },
   });
 
@@ -59,11 +62,12 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 
   const { id } = await params;
+  const mangaId = parseId(id);
   await prisma.chapter.deleteMany({
-    where: { mangaId: id },
+    where: { mangaId },
   });
   await prisma.manga.delete({
-    where: { id },
+    where: { id: mangaId },
   });
 
   return Response.json({ ok: true });

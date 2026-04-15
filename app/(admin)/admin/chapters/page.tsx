@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Manga = {
-  id: string;
+  id: number;
   title: string;
 };
 
 type Chapter = {
-  id: string;
+  id: number;
   title: string;
   content?: string;
   order: number;
@@ -17,8 +17,8 @@ type Chapter = {
 
 export default function AdminChaptersPage() {
   const [manga, setManga] = useState<Manga[]>([]);
-  const [selectedManga, setSelectedManga] = useState<string>("");
-  const [lockedMangaId, setLockedMangaId] = useState<string | null>(null);
+  const [selectedManga, setSelectedManga] = useState<number | null>(null);
+  const [lockedMangaId, setLockedMangaId] = useState<number | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -28,7 +28,7 @@ export default function AdminChaptersPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [order, setOrder] = useState<number>(1);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const token = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -40,8 +40,11 @@ export default function AdminChaptersPage() {
     const params = new URLSearchParams(window.location.search);
     const mangaId = params.get("mangaId");
     if (mangaId) {
-      setLockedMangaId(mangaId);
-      setSelectedManga(mangaId);
+      const parsedMangaId = Number(mangaId);
+      if (!Number.isNaN(parsedMangaId)) {
+        setLockedMangaId(parsedMangaId);
+        setSelectedManga(parsedMangaId);
+      }
     }
   }, []);
 
@@ -142,6 +145,10 @@ export default function AdminChaptersPage() {
       setStatus("Login required");
       return;
     }
+    if (!selectedManga) {
+      setStatus("Select a manga first");
+      return;
+    }
     setStatus(null);
     const res = await fetch("/api/chapters/create", {
       method: "POST",
@@ -212,7 +219,7 @@ export default function AdminChaptersPage() {
     setTimeout(() => setStatus(null), 1500);
   }
 
-  async function deleteChapter(id: string) {
+  async function deleteChapter(id: number) {
     if (!token) {
       setStatus("Login required");
       return;
@@ -269,8 +276,8 @@ export default function AdminChaptersPage() {
               <label className="block text-sm text-white/70">Manga</label>
               <select
                 className="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
-                value={selectedManga}
-                onChange={(e) => setSelectedManga(e.target.value)}
+                value={selectedManga ?? ""}
+                onChange={(e) => setSelectedManga(Number(e.target.value))}
               >
                 {manga.map((m) => (
                   <option key={m.id} value={m.id}>

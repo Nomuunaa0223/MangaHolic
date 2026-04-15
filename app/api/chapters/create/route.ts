@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
+import { parseId } from "@/lib/ids";
 
 export async function POST(req: Request) {
   let user: any;
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
 
   const chapter = await prisma.chapter.create({
     data: {
-      mangaId,
+      mangaId: parseId(mangaId),
       title,
       content,
       order: Number(order),

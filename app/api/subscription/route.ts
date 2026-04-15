@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
 
 export async function GET(req: Request) {
-  let user: any;
+  let user;
   try {
     user = getUser(req);
   } catch {

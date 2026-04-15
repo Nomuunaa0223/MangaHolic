@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
+import { parseId } from "@/lib/ids";
 
 export async function POST(req: Request) {
-  let user: any;
+  let user;
   try {
     user = getUser(req);
   } catch {
@@ -27,8 +28,9 @@ export async function POST(req: Request) {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const sessionUserId =
-      session.client_reference_id || session.metadata?.userId || "";
+    const sessionUserId = parseId(
+      session.client_reference_id || session.metadata?.userId || ""
+    );
 
     if (sessionUserId !== user.userId) {
       return Response.json({ error: "Session does not belong to this user" }, { status: 403 });

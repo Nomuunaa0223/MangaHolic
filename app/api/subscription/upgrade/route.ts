@@ -3,7 +3,7 @@ import { getUser } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
-  let user: any;
+  let user;
   try {
     user = getUser(req);
   } catch {
@@ -32,9 +32,9 @@ export async function POST(req: Request) {
       success_url: `${origin}/subscription?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/subscription?canceled=1`,
       customer_email: dbUser.email,
-      client_reference_id: dbUser.id,
+      client_reference_id: String(dbUser.id),
       metadata: {
-        userId: dbUser.id,
+        userId: String(dbUser.id),
         plan: "PREMIUM",
       },
       line_items: [
